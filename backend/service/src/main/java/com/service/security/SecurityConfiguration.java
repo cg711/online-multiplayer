@@ -79,6 +79,8 @@ public class SecurityConfiguration {
                 // .requestMatchers( "/product/**").hasAnyRole("USER")
                 // // GENERAL CONVERSATION HTTP ENDPOINTS
                 // .requestMatchers("/conversation/**").hasAnyRole("USER")
+                //LOBBY WEBSOCKET
+                .requestMatchers("/lobby/**").hasAnyRole("USER")
 
         );
 
