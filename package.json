@@ -1,0 +1,14 @@
+{
+  "name": "online-multiplayer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "fe:start": "cd frontend/online-multiplayer && npm start",
+    "be:build": "cd backend/service && ./gradlew clean build",
+    "be:start": "cd backend/service && ./gradlew bootRun",
+    "db:start": "cd backend/service && docker-compose up"
+  },
+  "author": "",
+  "license": "ISC"
+}
