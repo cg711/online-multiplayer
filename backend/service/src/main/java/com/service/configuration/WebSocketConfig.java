@@ -15,13 +15,6 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
-    private static WebsocketHandshakeInterceptor handler;
-    @Autowired
-    public void handshakeHandler(WebsocketHandshakeInterceptor interceptor) {
-        handler = interceptor;
-    }
-
     /**
      * Register stomp endpoint. What should be connected to on frontend with stompjs.
      * @param registry
@@ -30,7 +23,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
-//                .addInterceptors(handler)
                 .withSockJS();
     }
 

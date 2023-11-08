@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Cookies from 'universal-cookie';
 import SockJS from 'sockjs-client';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,9 +10,19 @@ export const Lobby = () => {
 
   const cookies = new Cookies();
 
+  const { auth } = useAuth();
+
+  const [gameData, setGameData] = useState([{}]);
+  // const [isConnected, setConnected] = useState(false);
+
+  // Connect on page load.
   useEffect(() => {
     connect();
   }, [])
+
+  // useEffect(() => {
+
+  // }, [gameData])
 
   const connect = () => {
 
@@ -20,13 +30,42 @@ export const Lobby = () => {
     stompClient = Stomp.over(socket);
 
     stompClient.connect({}, (frame) => {
-      stompClient.debug("Connected!");
-      console.log(frame);
+      stompClient.debug("Connected! " + frame);
+      // setConnected(true);
+      stompClient.subscribe("/topic/lobby/" + auth.id, (message) => {
+        setGameData(JSON.parse(message.body));
+      });
     });
   }
 
-
   return (
-    <div>Lobby</div>
+    <div>
+      <h1>Lobby</h1>
+      <div>
+        {
+          gameData?.map((item, index) => (
+            <div key={index}>
+              <p>{item?.maxPlayers}</p>
+              <p>{item?.dateCreated}</p>
+              <p>{item?.id}</p>
+              <div>
+                {
+                  item?.players?.map((p, pindex) => (
+                    <div key={pindex}>
+                      <p>{p?.id}</p>
+                      <p>{p?.username}</p>
+                      <p>{p?.role}</p>
+                      <p>{p?.dateCreated}</p>
+                      <p>{p?.active}</p>
+                      <p>{p?.isReported}</p>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
   )
 }

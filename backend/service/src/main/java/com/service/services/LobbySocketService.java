@@ -26,4 +26,14 @@ public class LobbySocketService {
         }
     }
 
+    /**
+     * Returns the user id of a destination, which in most cases is the trailing path variable
+     * @param dest
+     * @return
+     */
+    public String getSubscriptionId(String dest) {
+        String[] arr = dest.split("/");
+        return arr[arr.length - 1];
+    }
+
 }
