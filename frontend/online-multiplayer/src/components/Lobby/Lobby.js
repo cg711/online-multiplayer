@@ -12,17 +12,12 @@ export const Lobby = () => {
 
   const { auth } = useAuth();
 
-  const [gameData, setGameData] = useState([{}]);
-  // const [isConnected, setConnected] = useState(false);
+  const [gameData, setGameData] = useState([]);
 
   // Connect on page load.
   useEffect(() => {
     connect();
-  }, [])
-
-  // useEffect(() => {
-
-  // }, [gameData])
+  }, []);
 
   const connect = () => {
 
@@ -33,35 +28,37 @@ export const Lobby = () => {
       stompClient.debug("Connected! " + frame);
       // setConnected(true);
       stompClient.subscribe("/topic/lobby/" + auth.id, (message) => {
+        console.log(message.body);
+        //TODO functionality to differ between game data and join data
         setGameData(JSON.parse(message.body));
       });
     });
   }
 
+  const handleJoin = (id) => {
+    stompClient.send(`/app/join/${id}`);
+  }
+
   return (
-    <div>
-      <h1>Lobby</h1>
-      <div>
+    <div className="flex flex-col items-center">
+      <h1 className="font-bold">Lobby</h1>
+      <div className="flex flex-col gap-7">
         {
           gameData?.map((item, index) => (
-            <div key={index}>
-              <p>{item?.maxPlayers}</p>
+            <div className="border-2 border-gray-100 shadow-lg rounded-lg flex gap-4 p-4" key={index}>
+              <p>Players: {item?.players?.length}/{item?.maxPlayers}</p>
               <p>{item?.dateCreated}</p>
-              <p>{item?.id}</p>
+              {/* <p>{item?.id}</p> */}
               <div>
                 {
                   item?.players?.map((p, pindex) => (
                     <div key={pindex}>
-                      <p>{p?.id}</p>
                       <p>{p?.username}</p>
-                      <p>{p?.role}</p>
-                      <p>{p?.dateCreated}</p>
-                      <p>{p?.active}</p>
-                      <p>{p?.isReported}</p>
                     </div>
                   ))
                 }
               </div>
+              <button onClick={() => handleJoin(item?.id)} className="bg-green-300 rounded-lg px-4 py-2 hover:bg-green-500">Join</button>
             </div>
           ))
         }

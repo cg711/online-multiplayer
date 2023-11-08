@@ -32,6 +32,7 @@ export const Login = () => {
 
   return (
     <div>
+        <h1 className="bg-blue-200">Test</h1>
         <button onClick={() => handleLogin({username: "cg711", password: "password"})}>Login</button>
     </div>
   )

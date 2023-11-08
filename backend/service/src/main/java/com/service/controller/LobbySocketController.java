@@ -7,9 +7,11 @@ import com.service.entity.Game;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
@@ -42,27 +44,11 @@ public class LobbySocketController {
         lobbySocketService = service;
     }
 
-    /**
-     * Will receieve messages sent to /app/lobby
-     */
-    @MessageMapping("/lobby")
-    @SendTo("/topic/lobby")
-    public List<Game> test() {
-        return lobbySocketService.findAllGames();
+    @MessageMapping("/join/{gameId}")
+    public void attemptJoinGame(@DestinationVariable("gameId") Long gameId, SimpMessageHeaderAccessor accessor) {
+        boolean didJoin = lobbySocketService.attemptJoinGame(gameId, accessor);
+        messageTemplate.convertAndSend(WebsocketConstants.LOBBY + lobbySocketService.getUserIdFromHeader(accessor), Boolean.toString(didJoin));
     }
 
-    /**
-     * Handles all websocket subscriptions.
-     * @param event
-     */
-    @EventListener
-    public void handleWebsocketSubscription(SessionSubscribeEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String destination = headerAccessor.getDestination();
-        log.info("User " + headerAccessor.getUser().getName() + " subscribed to " + destination);
-        if (destination.matches(WebsocketConstants.LOBBY_REGEX)) {
-            messageTemplate.convertAndSend(WebsocketConstants.LOBBY + lobbySocketService.getSubscriptionId(destination), lobbySocketService.findAllGames());
-        }
-    }
 
 }

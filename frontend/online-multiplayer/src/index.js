@@ -4,6 +4,7 @@ import { ApplicationRouter } from './ApplicationRouter';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { AuthProvider } from './context/AuthProvider';
+import "./input.css";
 
 // AXIOS AUTH CONFIG WITH HTTPONLY COOKIE STORAGE
 const cookies = new Cookies();
