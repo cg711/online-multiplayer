@@ -48,6 +48,5 @@ public class Game {
 
     @ElementCollection
     @Fetch(FetchMode.JOIN)
-    // @OneToMany
     private List<Account> players;
 }

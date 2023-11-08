@@ -9,17 +9,12 @@ import { AuthProvider } from './context/AuthProvider';
 const cookies = new Cookies();
 
 axios.interceptors.request.use(
-  async (config) => {
-    const token = cookies.get("token");
-
-    if(token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return config;
-  }, (error) => {
-    if (error.response.status === 401) {
+  async (config) => config, 
+  (error) => {
+    if (cookies.get("token") == null) {
       window.location.href = '/login';
+    } else if (error.response.status === 404) {
+      window.location.href = '/dashboard';
     }
     return Promise.reject();
   }

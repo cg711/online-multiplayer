@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextChangedEvent;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
@@ -17,12 +19,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Filter for handling header parsing.
  */
 @Component
 @Slf4j
+@Order(1)
 public class AuthorizationHeaderRequestFilter extends OncePerRequestFilter {
     @Autowired
     UserDetailsImplService userDetailsImplService;
@@ -34,25 +38,29 @@ public class AuthorizationHeaderRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String username = "";
         String password = "";
+        String tokenHeader;
         UsernamePasswordAuthenticationToken authenticationToken;
         String uri = request.getRequestURI(); //get path of http request
 
         try {
+            log.info("Http auth");
+            // Is register endpoint? Bypass
             if(uri.endsWith(SecurityConstants.REGISTER_URI_ENDING)) {
                 SecurityContextHolder.getContext().setAuthentication(null);
                 response.setStatus(HttpServletResponse.SC_OK);
                 filterChain.doFilter(request, response);
                 return;
             }
-            String tokenHeader = request.getHeader(SecurityConstants.AUTH_HEADER); //get header by "Authorization"
+                tokenHeader = request.getHeader(SecurityConstants.AUTH_HEADER); //get header by "Authorization"
 
-            //check to see if authorization header exists with request
-            if (tokenHeader == null || (!tokenHeader.startsWith(SecurityConstants.BASIC_TOKEN_PREFIX) && !tokenHeader.startsWith(SecurityConstants.BEARER_TOKEN_PREFIX))) {
-                log.info("No Authorization Header Found!");
-                SecurityContextHolder.getContext().setAuthentication(null);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+                //check to see if authorization header exists with request
+                if (tokenHeader == null || (!tokenHeader.startsWith(SecurityConstants.BASIC_TOKEN_PREFIX) && !tokenHeader.startsWith(SecurityConstants.BEARER_TOKEN_PREFIX))) {
+                    log.info("No Authorization Header Found!");
+                    SecurityContextHolder.getContext().setAuthentication(null);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
 
             // Basic Authentication (for login) NOTE:
             // Header form: Basic [Base64 encrypted username:password]

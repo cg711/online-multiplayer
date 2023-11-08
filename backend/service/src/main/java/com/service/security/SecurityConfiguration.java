@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,6 +26,9 @@ public class SecurityConfiguration {
 
     @Autowired
     AuthorizationHeaderRequestFilter authorizationHeaderRequestFilter;
+
+    @Autowired
+    AuthorizationWebsocketRequestFilter authorizationWebsocketRequestFilter;
 
     /**
      * Inserts bcrypt password encoder into spring application context
@@ -48,7 +53,8 @@ public class SecurityConfiguration {
 
         //disable csrf; normally this isn't a great idea, but since we have a mobile application, it's ok.
         http.csrf(csrf -> csrf.disable());
-
+        http.headers(headers -> headers
+                .frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
         //configure cors
         http.cors(cors -> cors.configurationSource(new CorsConfigurationSource() {
             @Override
@@ -66,6 +72,7 @@ public class SecurityConfiguration {
 
         //filters: JWT Validation
         http.addFilterBefore(authorizationHeaderRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authorizationWebsocketRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         //routes (WHERE YOU IDENTIFY WHAT ROLES & AUTHENTICATION CAN ACCESS WHAT)
         http.authorizeHttpRequests(auth -> auth
@@ -74,14 +81,9 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/security/register").permitAll()
                 // // TEST (TO BE REMOVED)
                 .requestMatchers("/test/**").hasAnyRole("USER")
-                // .requestMatchers(HttpMethod.GET, "/test").hasAnyRole("USER")
-                // // PRODUCT ENDPOINTS
-                // .requestMatchers( "/product/**").hasAnyRole("USER")
-                // // GENERAL CONVERSATION HTTP ENDPOINTS
-                // .requestMatchers("/conversation/**").hasAnyRole("USER")
-                //LOBBY WEBSOCKET
-                .requestMatchers("/lobby/**").hasAnyRole("USER")
-
+                //WEBSOCKET
+                .requestMatchers("/ws/**").permitAll()
+                .anyRequest().denyAll()
         );
 
         return http.build();

@@ -10,5 +10,9 @@
     "db:start": "cd backend/service && docker-compose up"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "websocket": "^1.0.34"
+  }
 }

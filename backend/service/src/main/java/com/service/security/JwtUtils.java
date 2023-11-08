@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.Date;
 @Slf4j
 public class JwtUtils {
     private static Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SecurityConstants.JWT_SECRET),
-            SignatureAlgorithm.HS512.getJcaName());
+            SignatureAlgorithm.HS256.getJcaName());
 
     /**
      * Generates a new JWT token based on a given username.
@@ -82,4 +83,5 @@ public class JwtUtils {
             return null;
         }
     }
+
 }

@@ -21,9 +21,10 @@ export const Login = () => {
                 }
             });
             const tokenRaw = res.headers.get('Authorization').split(' ')[1];
+            console.log(tokenRaw);
             cookies.set("token", tokenRaw);
             setAuth({...res.data});
-            navigate("/dashboard");
+            navigate("/lobby");
         } catch (err) {
             console.log("error authenticating");
         }
