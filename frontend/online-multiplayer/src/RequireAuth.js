@@ -1,14 +1,10 @@
-import { useAuth } from "./hooks/useAuth";
+import { useEffect } from "react";
 
 const { useLocation, Outlet, Navigate } = require("react-router-dom");
 
-
 export const RequireAuth = ({ allowedRoles }) => {
-    const { auth } = useAuth();
+    const auth = JSON.parse(sessionStorage.getItem("user"));
     const location = useLocation();
-
-    console.log(auth);
-
     return (
         [auth?.role]?.find(role => allowedRoles?.includes(role))
             ? <Outlet/>

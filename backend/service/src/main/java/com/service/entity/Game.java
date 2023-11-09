@@ -37,8 +37,17 @@ public class Game {
     @Column(name = "game_id", unique = true)
     Long id;
 
+    /**
+     * False when game finished/abandoned, true otherwise
+     */
     @Column(name = "active")
     Boolean active;
+
+    /**
+     * True when game is currently being played, false otherwise
+     */
+    @Column(name = "ongoing")
+    Boolean ongoing;
 
     @Column(name = "date_created")
     Date dateCreated;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Cookies from 'universal-cookie';
 import SockJS from 'sockjs-client';
-import { useAuth } from '../../hooks/useAuth';
 import {Stomp} from '@stomp/stompjs';
+import { useNavigate } from 'react-router-dom';
 
 let stompClient = null;
 
@@ -10,9 +10,11 @@ export const Lobby = () => {
 
   const cookies = new Cookies();
 
-  const { auth } = useAuth();
+  const auth = JSON.parse(sessionStorage.getItem("user"));
 
   const [gameData, setGameData] = useState([]);
+
+  const navigate = useNavigate();
 
   // Connect on page load.
   useEffect(() => {
@@ -25,14 +27,26 @@ export const Lobby = () => {
     stompClient = Stomp.over(socket);
 
     stompClient.connect({}, (frame) => {
+
       stompClient.debug("Connected! " + frame);
-      // setConnected(true);
+
       stompClient.subscribe("/topic/lobby/" + auth.id, (message) => {
-        console.log(message.body);
-        //TODO functionality to differ between game data and join data
-        setGameData(JSON.parse(message.body));
+        let data = JSON.parse(message.body);
+        if(data?.canJoin != null) {
+          data?.canJoin ? handleDisconnect(data) : console.log("Can't join.");
+        } else if (data?.redirectURL != null) {
+          stompClient.disconnect();
+          navigate(data?.redirectURL);
+        } else {
+          setGameData(JSON.parse(message.body));
+        }
       });
     });
+  }
+
+  const handleDisconnect = (data) => {
+    stompClient.disconnect();
+    navigate(`/game/${data?.gameId}`);
   }
 
   const handleJoin = (id) => {
@@ -48,7 +62,6 @@ export const Lobby = () => {
             <div className="border-2 border-gray-100 shadow-lg rounded-lg flex gap-4 p-4" key={index}>
               <p>Players: {item?.players?.length}/{item?.maxPlayers}</p>
               <p>{item?.dateCreated}</p>
-              {/* <p>{item?.id}</p> */}
               <div>
                 {
                   item?.players?.map((p, pindex) => (

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 
-export const Login = () => {
+export const Register = () => {
 
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
@@ -19,18 +19,14 @@ export const Login = () => {
         }
     }, []);
 
-     const handleLogin = async ({username, password}) => {
+     const handleRegister = async ({username, password}) => {
         try {
-            const basicHeader = btoa(`${username}:${password}`);
-            const res = await axios.get("http://localhost:8080/security/login", {
+            const res = await axios.post("http://localhost:8080/security/register", {password, username}, {
                 headers: {
-                    Authorization: `Basic ${basicHeader}`
+                    "Content-Type": "application/json"
                 }
             });
-            const tokenRaw = res.headers.get('Authorization').split(' ')[1];
-            cookies.set("token", tokenRaw);
-            sessionStorage.setItem("user", JSON.stringify(res.data));
-            navigate("/dashboard");
+            navigate("/login");
         } catch (err) {
             setError(err.message);
         }
@@ -38,12 +34,12 @@ export const Login = () => {
 
   return (
     <div className="flex flex-col w-fit">
-        <h1 className="bg-blue-200">Login</h1>
+        <h1 className="bg-blue-200">Register</h1>
         <p>Username</p>
         <input className="border-2" onChange={(e) => setUsername(e.target.value)} value={username} type="text"/>
         <p>Password</p>
         <input className="border-2" onChange={(e) => setPassword(e.target.value)} value={password} type="password"/>
-        <button class="bg-slate-300 p-3 rounded-lg shadow-lg" onClick={() => handleLogin({username, password})}>Login</button>
+        <button class="bg-slate-300 p-3 rounded-lg shadow-lg" onClick={() => handleRegister({username, password})}>Register</button>
         <p className="bg-red-200">{error}</p>
     </div>
   )

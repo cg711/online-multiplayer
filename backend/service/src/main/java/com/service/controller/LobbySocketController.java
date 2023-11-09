@@ -3,6 +3,7 @@ package com.service.controller;
 import java.io.IOException;
 import java.util.List;
 
+import com.service.DTO.JoinGameDTO;
 import com.service.entity.Game;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,7 @@ public class LobbySocketController {
     @MessageMapping("/join/{gameId}")
     public void attemptJoinGame(@DestinationVariable("gameId") Long gameId, SimpMessageHeaderAccessor accessor) {
         boolean didJoin = lobbySocketService.attemptJoinGame(gameId, accessor);
-        messageTemplate.convertAndSend(WebsocketConstants.LOBBY + lobbySocketService.getUserIdFromHeader(accessor), Boolean.toString(didJoin));
+        messageTemplate.convertAndSend(WebsocketConstants.LOBBY + lobbySocketService.getUserIdFromHeader(accessor), JoinGameDTO.builder().canJoin(didJoin).gameId(gameId).build());
     }
-
 
 }

@@ -23,12 +23,12 @@ public class LobbySocketService {
     AccountRepository accountRepository;
 
     /**
-     * TODO
+     * Returns a list of active games. Active means game is either ongoing or not and not abandoned or ended.
      * @return
      */
     public List<Game> findAllGames() {
         try {
-            return gameRepository.findAll();
+            return gameRepository.findByActiveTrue();
         } catch (Exception e) {
             return null;
         }
@@ -44,13 +44,15 @@ public class LobbySocketService {
         return arr[arr.length - 1];
     }
 
+    /**
+     * Dictates whether a user is currently in a non-ongoing game.
+     * @param account
+     * @param gameId
+     * @return
+     */
     public boolean doesUserExistInGame(Account account, Long gameId) {
         Game game = gameRepository.findById(gameId).orElseThrow();
-        if(game.getPlayers().contains(account)) {
-            return true;
-        } else {
-            return false;
-        }
+        return game.getPlayers().contains(account);
     }
 
     /**
@@ -64,8 +66,8 @@ public class LobbySocketService {
         Account account = accountRepository.findByUsername(accessor.getUser().getName()).get(0);
         //if game exists
         Game game = gameRepository.findById(gameId).orElseThrow();
-        // if game exists, isn't ongoing, and doesn't have max players
-        if(game != null && !game.getActive() && game.getPlayers().size() != game.getMaxPlayers() && !doesUserExistInGame(account, gameId)) {
+        // if game exists, is active, isn't ongoing, and doesn't have max players
+        if(game != null && game.getActive() && !game.getOngoing() && game.getPlayers().size() != game.getMaxPlayers() && !doesUserExistInGame(account, gameId)) {
             // If here, game is joinable.
             game.getPlayers().add(account);
             gameRepository.save(game);
@@ -80,6 +82,35 @@ public class LobbySocketService {
 
     public Long getUserIdFromHeader(SimpMessageHeaderAccessor accessor) {
         return accountRepository.findByUsername(accessor.getUser().getName()).get(0).getId();
+    }
+
+    public Long findUserInGame(SimpMessageHeaderAccessor accessor) {
+        Account account = accountRepository.findByUsername(accessor.getUser().getName()).get(0);
+        for(Game g : gameRepository.findByActiveTrue()) {
+            log.info(g.getId().toString());
+            for(Account a : g.getPlayers()) {
+                if(a.getId().equals(account.getId())) {
+                    return g.getId();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes a user from a game. Done on websocket disconnect.
+     * @param accessor
+     */
+    public void removeUserFromGame(SimpMessageHeaderAccessor accessor) {
+        Account account = accountRepository.findByUsername(accessor.getUser().getName()).get(0);
+        Game game = gameRepository.findById(findUserInGame(accessor)).orElseThrow();
+        for(int i = 0; i < game.getPlayers().size(); i++) {
+            if(game.getPlayers().get(i).getUsername().equals(account.getUsername())) {
+                game.getPlayers().remove(i);
+                break;
+            }
+        }
+        gameRepository.save(game);
     }
 
 }

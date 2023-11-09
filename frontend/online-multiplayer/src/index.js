@@ -3,10 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { ApplicationRouter } from './ApplicationRouter';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
-import { AuthProvider } from './context/AuthProvider';
 import "./input.css";
 
-// AXIOS AUTH CONFIG WITH HTTPONLY COOKIE STORAGE
+// AXIOS AUTH CONFIG WITH HTTPONLY COOKIE JWT STORAGE
 const cookies = new Cookies();
 
 axios.interceptors.request.use(
@@ -26,9 +25,7 @@ axios.defaults.headers.common['Authorization'] = `Bearer ${cookies.get("token")}
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>
-    <AuthProvider>
       <ApplicationRouter/>
-    </AuthProvider>
   // </React.StrictMode>
 );
 
